@@ -53,8 +53,18 @@ import {LampSvg} from './lamp-svg';
             </span>
           </div>
 
+          <a
+            href="/"
+            title="Return to Hub"
+            class="inline-flex items-center gap-1.5 text-xs tracking-wider uppercase text-amber-400 hover:text-amber-300 font-semibold transition-colors cursor-pointer"
+          >
+            ← Return to Hub
+          </a>
+
           <h1 class="font-display text-5xl sm:text-6xl font-semibold tracking-tight text-stone-50 leading-[1.06] text-balance">
-            Lumen Atelier
+            <a href="/" title="Return to Hub" class="hover:text-amber-300 transition-colors cursor-pointer">
+              Lumen Atelier
+            </a>
           </h1>
 
           <p class="text-base sm:text-lg text-stone-300 leading-relaxed max-w-md">
