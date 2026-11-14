@@ -3,8 +3,8 @@
 > Lumen Atelier — Artisanal lamp crafting game with custom lighting physics, NPC customer commissions, and showroom.
 
 ## 🌐 Live Website & Links
-- **Play Live App:** [https://ememas07.github.io/AI-Studio-Hub/lamp-maker/](https://ememas07.github.io/AI-Studio-Hub/lamp-maker/)
-- **AI Studio Hub:** [https://ememas07.github.io/AI-Studio-Hub/](https://ememas07.github.io/AI-Studio-Hub/)
+- **Play Live App:** [https://marc-mas.ddns.net/lamp-maker/](https://marc-mas.ddns.net/lamp-maker/)
+- **AI Studio Hub:** [https://marc-mas.ddns.net/](https://marc-mas.ddns.net/)
 
 ---
 - **Author:** Made by me using Google AI Studio
