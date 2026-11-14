@@ -1,0 +1,341 @@
+@if (phase() === 'title') {
+  <app-title-screen
+    [hasSavedProgress]="hasSavedProgress()"
+    (startGame)="startWorkshop()"
+  />
+} @else {
+  <div class="min-h-screen w-full bg-[#111215] text-stone-100 flex flex-col">
+    <!-- World-Matched Game Shell HUD Strip -->
+    <div
+      class="w-full px-4 sm:px-6 py-2.5 bg-[#15171c] border-b border-white/10 flex flex-wrap items-center justify-between gap-3"
+      role="region"
+      aria-label="Workshop HUD"
+    >
+      <!-- Brand + Game Mode Switcher -->
+      <div class="flex flex-wrap items-center gap-4">
+        <span class="font-display text-lg font-semibold tracking-tight text-stone-100 whitespace-nowrap">
+          Lumen Atelier
+        </span>
+
+        <div
+          class="flex items-center gap-1 p-1 rounded-lg bg-[#101115] border border-white/8"
+          role="tablist"
+          aria-label="Workshop modes"
+        >
+          <button
+            type="button"
+            role="tab"
+            [attr.aria-selected]="activeTab() === 'workbench'"
+            (click)="setTab('workbench')"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer whitespace-nowrap shrink-0"
+            [class]="
+              activeTab() === 'workbench'
+                ? 'bg-amber-500 text-stone-950 font-semibold'
+                : 'text-stone-300 hover:text-white hover:bg-white/5'
+            "
+          >
+            <mat-icon class="!text-[15px] !w-[15px] !h-[15px]">handyman</mat-icon>
+            <span>Workbench</span>
+          </button>
+
+          <button
+            type="button"
+            role="tab"
+            [attr.aria-selected]="activeTab() === 'orders'"
+            (click)="setTab('orders')"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer whitespace-nowrap shrink-0"
+            [class]="
+              activeTab() === 'orders'
+                ? 'bg-amber-500 text-stone-950 font-semibold'
+                : 'text-stone-300 hover:text-white hover:bg-white/5'
+            "
+          >
+            <mat-icon class="!text-[15px] !w-[15px] !h-[15px]">assignment</mat-icon>
+            <span>Orders ({{ activeOrders().length }})</span>
+          </button>
+
+          <button
+            type="button"
+            role="tab"
+            [attr.aria-selected]="activeTab() === 'materials'"
+            (click)="setTab('materials')"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer whitespace-nowrap shrink-0"
+            [class]="
+              activeTab() === 'materials'
+                ? 'bg-amber-500 text-stone-950 font-semibold'
+                : 'text-stone-300 hover:text-white hover:bg-white/5'
+            "
+          >
+            <mat-icon class="!text-[15px] !w-[15px] !h-[15px]">layers</mat-icon>
+            <span>Materials</span>
+          </button>
+
+          <button
+            type="button"
+            role="tab"
+            [attr.aria-selected]="activeTab() === 'showroom'"
+            (click)="setTab('showroom')"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer whitespace-nowrap shrink-0"
+            [class]="
+              activeTab() === 'showroom'
+                ? 'bg-amber-500 text-stone-950 font-semibold'
+                : 'text-stone-300 hover:text-white hover:bg-white/5'
+            "
+          >
+            <mat-icon class="!text-[15px] !w-[15px] !h-[15px]">storefront</mat-icon>
+            <span>Showroom ({{ offers().length > 0 ? offers().length + ' Offer' : unplacedCount() + ' Ready' }})</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Telemetry & Utility Controls -->
+      <div class="flex items-center gap-4 shrink-0">
+        <div class="flex items-center gap-3 text-xs sm:text-sm font-mono-num">
+          <span title="Workshop Coins">
+            <span class="text-stone-400">Coins </span>
+            <strong class="text-amber-300 font-semibold" data-testid="hud-coins">{{ coins() }}c</strong>
+          </span>
+          <span aria-hidden="true" class="text-stone-600">·</span>
+          <span title="Atelier Reputation">
+            <span class="text-stone-400">Rep </span>
+            <strong class="text-emerald-400 font-semibold" data-testid="hud-rep">{{ reputation() }}</strong>
+          </span>
+          <span aria-hidden="true" class="text-stone-600 hidden sm:inline">·</span>
+          <span class="hidden sm:inline" title="Showroom Admiration Score">
+            <span class="text-stone-400">Showroom </span>
+            <strong class="text-stone-100 font-semibold">{{ showroomScore() }}</strong>
+          </span>
+        </div>
+
+        <div class="flex items-center gap-1.5">
+          <button
+            type="button"
+            (click)="sound.toggleMute()"
+            [attr.aria-label]="sound.muted() ? 'Unmute audio' : 'Mute audio'"
+            title="Toggle Audio [M]"
+            class="w-8 h-8 rounded-lg bg-[#1d2026] border border-white/10 inline-flex items-center justify-center text-stone-300 hover:text-white hover:bg-[#262a32] transition-colors cursor-pointer"
+          >
+            <mat-icon class="!text-[18px] !w-[18px] !h-[18px]">
+              {{ sound.muted() ? 'volume_off' : 'volume_up' }}
+            </mat-icon>
+          </button>
+
+          <button
+            type="button"
+            (click)="pauseWorkshop()"
+            aria-label="Pause workshop"
+            title="Pause [Esc]"
+            class="w-8 h-8 rounded-lg bg-[#1d2026] border border-white/10 inline-flex items-center justify-center text-stone-300 hover:text-white hover:bg-[#262a32] transition-colors cursor-pointer"
+          >
+            <mat-icon class="!text-[18px] !w-[18px] !h-[18px]">pause</mat-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transient Action Toast (zero layout shift) -->
+    @if (workshopToast(); as toastMsg) {
+      <div class="fixed bottom-4 right-4 z-40 pointer-events-none">
+        <div
+          class="pointer-events-auto px-4 py-2.5 rounded-xl bg-[#18211d] border border-emerald-400/40 shadow-lg text-xs text-emerald-100 flex items-center gap-3"
+          role="status"
+        >
+          <span>{{ toastMsg }}</span>
+          @if (activeTab() !== 'showroom') {
+            <button
+              type="button"
+              (click)="setTab('showroom')"
+              class="font-semibold text-amber-300 hover:text-amber-200 underline cursor-pointer shrink-0"
+            >
+              Open Showroom
+            </button>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Main Active View -->
+    <main class="flex-1 w-full">
+      @switch (activeTab()) {
+        @case ('workbench') {
+          <div class="w-full max-w-[1400px] mx-auto p-4 sm:p-5 grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch lg:h-[calc(100vh-64px)]">
+            <!-- Left/Center: Pinned Order Brief + Live Lamp Stage -->
+            <div class="lg:col-span-7 xl:col-span-8 flex flex-col gap-3 min-h-[420px]">
+              @if (pinnedOrder(); as order) {
+                <div class="p-3.5 rounded-xl bg-[#17191e] border border-white/10 flex flex-wrap items-center justify-between gap-3">
+                  <div class="min-w-0 flex-1">
+                    <div class="flex flex-wrap items-center gap-2 text-xs">
+                      <span class="font-semibold text-amber-300">Client Brief: {{ order.clientName }}</span>
+                      <span aria-hidden="true" class="text-stone-600">·</span>
+                      <span class="text-stone-400">{{ order.clientRole }}</span>
+                      <span aria-hidden="true" class="text-stone-600">·</span>
+                      <span class="font-mono-num text-emerald-400">
+                        Match {{ pinnedOrderEval()?.score ?? 0 }}%
+                      </span>
+                    </div>
+                    <p class="text-xs text-stone-300 mt-1 truncate">
+                      "{{ order.dialogue }}"
+                    </p>
+                  </div>
+
+                  <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                    <span
+                      class="inline-flex items-center gap-1"
+                      [class]="pinnedOrderEval()?.styleMatched ? 'text-emerald-400' : 'text-stone-300'"
+                    >
+                      <mat-icon class="!text-[14px] !w-3.5 !h-3.5">
+                        {{ pinnedOrderEval()?.styleMatched ? 'check_circle' : 'radio_button_unchecked' }}
+                      </mat-icon>
+                      {{ order.preferredStyle }}
+                    </span>
+
+                    @if (order.requiredMaterial; as matId) {
+                      <span
+                        class="inline-flex items-center gap-1"
+                        [class]="pinnedOrderEval()?.materialMatched ? 'text-emerald-400' : 'text-stone-300'"
+                      >
+                        <mat-icon class="!text-[14px] !w-3.5 !h-3.5">
+                          {{ pinnedOrderEval()?.materialMatched ? 'check_circle' : 'radio_button_unchecked' }}
+                        </mat-icon>
+                        {{ materialName(matId) }}
+                      </span>
+                    }
+
+                    @if (order.requiredFunctionality; as fnId) {
+                      <span
+                        class="inline-flex items-center gap-1"
+                        [class]="pinnedOrderEval()?.functionalityMatched ? 'text-emerald-400' : 'text-stone-300'"
+                      >
+                        <mat-icon class="!text-[14px] !w-3.5 !h-3.5">
+                          {{ pinnedOrderEval()?.functionalityMatched ? 'check_circle' : 'radio_button_unchecked' }}
+                        </mat-icon>
+                        {{ functionalityName(fnId) }}
+                      </span>
+                    }
+
+                    <span
+                      class="inline-flex items-center gap-1 font-mono-num"
+                      [class]="pinnedOrderEval()?.kelvinMatched ? 'text-emerald-400' : 'text-stone-300'"
+                    >
+                      <mat-icon class="!text-[14px] !w-3.5 !h-3.5">
+                        {{ pinnedOrderEval()?.kelvinMatched ? 'check_circle' : 'radio_button_unchecked' }}
+                      </mat-icon>
+                      {{ order.kelvinRange[0] }}–{{ order.kelvinRange[1] }}K
+                    </span>
+
+                    <span
+                      class="inline-flex items-center gap-1 font-mono-num"
+                      [class]="pinnedOrderEval()?.lumensMatched ? 'text-emerald-400' : 'text-stone-300'"
+                    >
+                      <mat-icon class="!text-[14px] !w-3.5 !h-3.5">
+                        {{ pinnedOrderEval()?.lumensMatched ? 'check_circle' : 'radio_button_unchecked' }}
+                      </mat-icon>
+                      {{ order.lumensRange[0] }}–{{ order.lumensRange[1] }} lm
+                    </span>
+                  </div>
+                </div>
+              }
+
+              <div class="flex-1 min-h-[340px]">
+                <app-lamp-stage
+                  [blueprint]="blueprint()"
+                  [metrics]="currentMetrics()"
+                  [roomSetting]="activeRoomSetting()"
+                  (toggleLight)="toggleLampPower()"
+                />
+              </div>
+            </div>
+
+            <!-- Right: Modular Workbench Controls -->
+            <div class="lg:col-span-5 xl:col-span-4 min-h-[420px]">
+              <app-workbench-controls
+                [blueprint]="blueprint()"
+                [metrics]="currentMetrics()"
+                [inventory]="inventory()"
+                [pinnedOrder]="pinnedOrder()"
+                (updateBlueprint)="onUpdateBlueprint($event)"
+                (partSwapped)="onPartSwapped($event)"
+                (craftForShowroom)="craftForShowroom()"
+                (deliverOrder)="pinnedOrder() && onDeliverOrder(pinnedOrder()!)"
+                (goToMaterials)="setTab('materials')"
+              />
+            </div>
+          </div>
+        }
+
+        @case ('orders') {
+          <app-orders-panel
+            [orders]="activeOrders()"
+            [pinnedOrderId]="pinnedOrderId()"
+            [currentBlueprint]="blueprint()"
+            [currentMetrics]="currentMetrics()"
+            [inventory]="inventory()"
+            (pinOrder)="onPinOrder($event)"
+            (deliverOrder)="onDeliverOrder($event)"
+            (refreshOrders)="onRefreshOrders()"
+          />
+        }
+
+        @case ('materials') {
+          <app-materials-panel
+            [inventory]="inventory()"
+            [coins]="coins()"
+            [forageStamina]="forageStamina()"
+            [maxStamina]="maxStamina"
+            [lastGatherNote]="lastGatherNote()"
+            (gatherZone)="onGatherZone($event)"
+            (salvageFree)="onSalvageFree()"
+            (buyMaterial)="onBuyMaterial($event)"
+          />
+        }
+
+        @case ('showroom') {
+          <app-showroom-panel
+            [pedestals]="pedestals()"
+            [craftedLamps]="craftedLamps()"
+            [visitors]="visitors()"
+            [offers]="offers()"
+            (placeLamp)="onPlaceLampInShowroom($event)"
+            (removeLamp)="onRemoveLampFromShowroom($event)"
+            (togglePedestalLight)="onTogglePedestalLight($event)"
+            (toggleAllLights)="onToggleAllShowroomLights()"
+            (inviteVisitors)="onInviteVisitors()"
+            (acceptOffer)="onAcceptShowroomOffer($event)"
+            (declineOffer)="onDeclineShowroomOffer($event)"
+            (goToWorkbench)="setTab('workbench')"
+          />
+        }
+      }
+    </main>
+  </div>
+
+  <!-- Modals -->
+  @if (appraisalResult(); as result) {
+    <app-appraisal-modal
+      [order]="result.order"
+      [evaluation]="result.evaluation"
+      (closeModal)="closeAppraisalModal()"
+    />
+  }
+
+  @if (phase() === 'paused') {
+    <app-pause-modal
+      [lampsCount]="craftedLamps().length"
+      [ordersCompleted]="ordersCompleted()"
+      [salesCount]="salesCount()"
+      (resumeWorkshop)="resumeWorkshop()"
+      (backToTitle)="backToTitle()"
+      (resetCareer)="resetCareer()"
+    />
+  }
+
+  @if (phase() === 'gameover') {
+    <app-mastery-modal
+      [reputation]="reputation()"
+      [coins]="coins()"
+      [lampsCount]="craftedLamps().length"
+      (continueEndless)="continueEndless()"
+      (startFresh)="resetCareer()"
+    />
+  }
+}

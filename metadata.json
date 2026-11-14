@@ -1,0 +1,6 @@
+{
+  "name": "Lumen Atelier",
+  "description": "An artisanal lamp-crafting game with material gathering, custom lighting physics, NPC customer commissions, and an interactive lamp showroom.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
